@@ -1,6 +1,6 @@
 #Config File for Kindlenote.py
 
-print 'Config file imported successfully'
+#print 'Config file imported successfully'
 
 configFile = True
 
