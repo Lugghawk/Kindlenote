@@ -12,13 +12,13 @@ parser = optparse.OptionParser(usage='Usage: %prog [options] <files>')
 parser.add_option('-c', '--convert', help='add convert tag to the subject line',
 		dest='convert', default=False, action='store_true')
 
-if len(sys.argv) < 2: # No arguments provided.
+if not sys.argv[1:]: # No arguments provided.
 	parser.print_help()
 	sys.exit(2)
 
 (opts, files) = parser.parse_args()
 
-if len(files) < 1: # No filenames provided.
+if not files: # No filenames provided.
 	print "You must provide at least one file to send."
 	sys.exit(2)
 
