@@ -3,44 +3,33 @@ import smtplib
 import sys
 import os
 from getpass import getpass
+import optparse
 
 from socket import error as sockError
 
-def printHelp():
-	print """
-	Usage: 
-	
-	kindlenote.py [-c]  [--help] <filename1> <filename2> ...
-	
-	-c: Add convert tag to the subject line. 
-	
-	--help: Show this screen
-	
-	<filename#>: Include a file in your next send from kindlenote.
-	
-	Your config file, config.py, needs to be filled in. Take config_sample.py and copy it to config.py, fill in your smtp details, and fire away.
-	"""
-	sys.exit(0)
+### Parse command-line options
 
-if len (sys.argv) == 1: # Just the name of the program, no arguments.
-	printHelp()	# Display the help page.
+parser = optparse.OptionParser(usage='Usage: %prog [options] <files>')
+parser.add_option('-c', '--convert', help='add convert tag to the subject line',
+		dest='convert', default=False, action='store_true')
 
-sys.argv.pop(0) # Get rid of the script name, we don't need it.
-#Check for 'Convert' flag.
-if sys.argv[0] == '-c':
-	#Convert!
-	if DEBUG:
-		print "Convert flag found!"
-	convert = True #We pass this to our sendMail function so that our subject line contains the word Convert.
-	sys.argv.pop(0)
-elif sys.argv[0] == '--help':
-	printHelp()
+if len(sys.argv) < 2: # No arguments provided.
+	parser.print_help()
+	sys.exit(2)
+
+(opts, files) = parser.parse_args()
+
+if len(files) < 1: # No filenames provided.
+	print "You must provide at least one file to send."
+	sys.exit(2)
 
 ##Continue with imports
 try:
 	import config
 except ImportError:
-	print "config.py not found. Please check config_sample.py and fill in your details"
+	print """config.py not found.
+
+Your config file, config.py, needs to be filled in. Take config_sample.py and copy it to config.py, fill in your smtp details, and fire away."""
 	sys.exit(1)
 
 ##Attachment imports##
@@ -177,6 +166,6 @@ smtpLogin(config.userName, config.passWord, server)
 
 #Count the files on command line.
 	
-fileList = checkArgs (sys.argv)
+fileList = checkArgs (files)
 	
-sendMail(config.from_addr,config.to_addr,'This is a test message',server,fileList, convert)
+sendMail(config.from_addr,config.to_addr,'This is a test message',server,fileList, opts.convert)
