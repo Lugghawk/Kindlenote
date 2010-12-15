@@ -112,6 +112,7 @@ def smtpLogin(userName, passWord, smtpObject):
 		del(passWord)
 	except smtplib.SMTPAuthenticationError:
 		print "There was an error during authentication. Check your credentials in config.py"
+		sys.exit(1)
 	else: 
 		if DEBUG:
 			print "Authentication with "+config.smtpServer+" successful."
