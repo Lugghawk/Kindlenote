@@ -41,7 +41,7 @@ try:
 	import config
 except ImportError:
 	print "config.py not found. Please check config_sample.py and fill in your details"
-	sys.exit(0)
+	sys.exit(1)
 
 ##Attachment imports##
 from email.MIMEMultipart import MIMEMultipart
@@ -69,7 +69,7 @@ def checkConfig():
 		print "Config file has data in the required fields"
 	else:
 		print "Please correct your config.py file and try again"
-		sys.exit(0) # Exits the program since the config file is not right.
+		sys.exit(1) # Exits the program since the config file is not right.
 			
 	
 ################################################
@@ -142,7 +142,7 @@ def checkArgs (arguments): # Checks files that are specified at command line exi
 	
 	if len(filesToSend) == 0:
 		print "Exiting since no files listed" # Shouldn't happen, but just in case.
-		sys.exit(0) # Exiting due to a parameter's files not existing.
+		sys.exit(1) # Exiting due to a parameter's files not existing.
 	elif len(filesToSend) >= 5:
 		print "Exiting. Too many files specified. Maximum of 5 allowed."
 	return filesToSend
@@ -162,10 +162,10 @@ try:
 	server.ehlo_or_helo_if_needed()
 except sockError as e:
 	print e
-	sys.exit(0)
+	sys.exit(1)
 except (smtplib.SMTPException,smtplib.SMTPConnectError):
 	print "There was a problem connecting"
-	sys.exit(0)
+	sys.exit(1)
 else:
 	if DEBUG:
 		print "Connection to " + config.smtpServer + " successful"
