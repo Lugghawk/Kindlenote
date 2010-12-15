@@ -60,17 +60,13 @@ DEBUG = True # Sets our debug status to true. Will give some extra logging throu
 
 
 def checkConfig():
-	if config.smtpServer == '' or config.userName == '' or config.to_addr == '' or config.from_addr == '':
+	if not (config.smtpServer and config.smtpPort and config.userName and config.to_addr and config.from_addr):
 		#Make sure the required items are there.
 		print "There was a problem with your config. One or more of the required values are not set."
-		config.configFile = False
-
-	if config.configFile:
-		print "Config file has data in the required fields"
-	else:
 		print "Please correct your config.py file and try again"
 		sys.exit(1) # Exits the program since the config file is not right.
-			
+	else:
+		print "Config file has data in the required fields"
 	
 ################################################
 ##Function Declarations##
@@ -159,7 +155,11 @@ def checkArgs (arguments): # Checks files that are specified at command line exi
 checkConfig()
 #Try to connect to our server.
 try:
-	server = smtplib.SMTP_SSL(config.smtpServer,465) # Use SSL by default atm.
+	if config.smtpSSL:
+		server = smtplib.SMTP_SSL(config.smtpServer, config.smtpPort)
+	else:
+		server = smtplib.SMTP(config.smtpServer, config.smtpPort)
+
 	server.ehlo_or_helo_if_needed()
 except sockError as e:
 	print e
