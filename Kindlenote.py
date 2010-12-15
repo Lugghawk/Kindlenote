@@ -2,7 +2,7 @@
 import smtplib
 import sys
 import os
-import getpass
+from getpass import getpass
 
 from socket import error as sockError
 
@@ -82,12 +82,12 @@ def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False
 	msg['Date'] = formatdate(localtime=True)
 	
 	
+	subject = "Item from Kindlenote"
 	if convertFlag:
 		if DEBUG:
 			print "Adding convert!"
-		msg['Subject'] = "Item from Kindlenote - Convert"
-	else:
-		msg['Subject'] = "Item from Kindlenote"
+		subject += " - Convert"
+	msg['Subject'] = subject
 	
 	
 	msg.attach(MIMEText("Thanks for using Kindlenote"))
@@ -99,8 +99,11 @@ def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False
 		#Rename the file in the attachment to .txt
 		#We have to do this after we open it, it's just the name in python that we add to the header.
 		#Amazon only allows certain extensions to the kindle.
-		files = files[:-2]
-		files = files + "txt"
+		dot_idx = files.rfind(".")
+		if dot_idx >= 0:
+			# Remove everything from the end until (and including) the last dot
+			files = files[:dot_idx]
+		files += ".txt"
 		
 		Encoders.encode_base64(part)
 		part.add_header('Content-Disposition', 'attachment; filename="'+files+'"')
@@ -132,13 +135,11 @@ def checkArgs (arguments): # Checks files that are specified at command line exi
 	filesToSend = []
 	for arg in arguments:
 	
-		try:
-			open(arg,"r")
-		except IOError:
+		if os.access(arg, os.R_OK):
+			filesToSend.append (arg)
+		else:
 			print "File " + arg +" doesn't exist. Skipping."
 			#filesDontExist = True #Removing since we don't need to exit, just say that we're skipping that file.
-		else:
-			filesToSend.append (arg)
 	
 	if len(filesToSend) == 0:
 		print "Exiting since no files listed" # Shouldn't happen, but just in case.
