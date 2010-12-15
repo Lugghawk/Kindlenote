@@ -48,7 +48,8 @@ DEBUG = True # Sets our debug status to true. Will give some extra logging throu
 
 
 def checkConfig():
-	if not (config.smtpServer and config.smtpPort and config.userName and config.to_addr and config.from_addr):
+	if not (config.smtpServer and config.smtpPort and config.userName and
+			config.to_addr and config.from_addr and config.maxAttachments):
 		#Make sure the required items are there.
 		print "There was a problem with your config. One or more of the required values are not set."
 		print "Please correct your config.py file and try again"
@@ -129,8 +130,7 @@ def checkArgs (arguments): # Checks files that are specified at command line exi
 	if len(filesToSend) == 0:
 		print "Exiting since no files listed" # Shouldn't happen, but just in case.
 		sys.exit(1) # Exiting due to a parameter's files not existing.
-	elif len(filesToSend) >= 5:
-		print "Exiting. Too many files specified. Maximum of 5 allowed."
+
 	return filesToSend
 	
 	
@@ -164,8 +164,12 @@ else:
 
 smtpLogin(config.userName, config.passWord, server)
 
-#Count the files on command line.
-	
+# Filter out invalid files.
 fileList = checkArgs (files)
-	
-sendMail(config.from_addr,config.to_addr,'This is a test message',server,fileList, opts.convert)
+
+# Split all the files into batches of config.maxAttachments files.
+batchStarts = xrange(0, len(fileList), config.maxAttachments)
+batches = [fileList[x:x+config.maxAttachments] for x in batchStarts]
+
+for batch in batches:
+	sendMail(config.from_addr,config.to_addr,'This is a test message',server, batch, opts.convert)
