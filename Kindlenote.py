@@ -1,11 +1,10 @@
 #!/usr/bin/python
-import smtplib
-import sys
-import os
 from getpass import getpass
 import optparse
-
+import os
+import smtplib
 from socket import error as sockError
+import sys
 
 ### Parse command-line options
 
