@@ -3,7 +3,7 @@
 #print 'Config file imported successfully'
 
 smtpServer = ''#Your outgoing mail server.
-smtpPort = 0 #And its port.
+smtpPort = 465 #And its port. 465 for SSL, 25 for not (by default).
 smtpSSL = True #Whether to use SSL.
 userName = ''#Please put your usename here.
 passWord = ''#Put your SMTP password here.

@@ -60,11 +60,12 @@ def checkConfig():
 ################################################
 ##Function Declarations##
 def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False):
-	
+	if DEBUG: print "Entering sendMail()"
 	msg = MIMEMultipart()
 	msg['From'] = from_addr
 	msg['To'] = to_addr
 	msg['Date'] = formatdate(localtime=True)
+	
 	
 	
 	subject = "Item from Kindlenote"
@@ -74,12 +75,19 @@ def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False
 		subject += " - Convert"
 	msg['Subject'] = subject
 	
+	if DEBUG: print "Done setting headers"
 	
 	msg.attach(MIMEText("Thanks for using Kindlenote"))
 	
 	for files in attach:
+		if DEBUG: print "Beginning attach of file", files
 		part = MIMEBase('application', "octet-stream")
 		part.set_payload( open (files,"rb").read())
+		
+		
+		#Fix the attachment name.
+		
+		files = os.path.basename(files)
 		
 		#Rename the file in the attachment to .txt
 		#We have to do this after we open it, it's just the name in python that we add to the header.
@@ -94,6 +102,9 @@ def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False
 		part.add_header('Content-Disposition', 'attachment; filename="'+files+'"')
 		msg.attach(part)
 		
+		if DEBUG: print "Done attaching file", files
+		
+	if DEBUG: print "Beginning the send"
 	try:
 		smtpObject.sendmail(from_addr, to_addr, msg.as_string())
 	except smtplib.SMTPException:
@@ -175,4 +186,6 @@ batchStarts = xrange(0, len(fileList), config.maxAttachments)
 batches = [fileList[x:x+config.maxAttachments] for x in batchStarts]
 
 for batch in batches:
+	if DEBUG: print "Sending batch."
 	sendMail(config.from_addr,config.to_addr,'This is a test message',server, batch, opts.convert)
+	if DEBUG: print "Done sending batch."
