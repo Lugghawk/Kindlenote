@@ -11,6 +11,8 @@ import sys
 parser = optparse.OptionParser(usage='Usage: %prog [options] <files>')
 parser.add_option('-c', '--convert', help='add convert tag to the subject line',
 		dest='convert', default=False, action='store_true')
+		
+parser.add_option('-D', '--debug', help='Turn on debugging output', dest='DEBUG', default=False, action='store_true')
 
 if not sys.argv[1:]: # No arguments provided.
 	parser.print_help()
@@ -39,7 +41,7 @@ from email.Utils import COMMASPACE, formatdate
 from email import Encoders
 
 
-DEBUG = True # Sets our debug status to true. Will give some extra logging throughout the connection process.
+
 ################################################
 
 
@@ -60,7 +62,7 @@ def checkConfig():
 ################################################
 ##Function Declarations##
 def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False):
-	if DEBUG: print "Entering sendMail()"
+	if opts.DEBUG: print "Entering sendMail()"
 	msg = MIMEMultipart()
 	msg['From'] = from_addr
 	msg['To'] = to_addr
@@ -70,17 +72,17 @@ def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False
 	
 	subject = "Item from Kindlenote"
 	if convertFlag:
-		if DEBUG:
+		if opts.DEBUG:
 			print "Adding convert!"
 		subject += " - Convert"
 	msg['Subject'] = subject
 	
-	if DEBUG: print "Done setting headers"
+	if opts.DEBUG: print "Done setting headers"
 	
 	msg.attach(MIMEText("Thanks for using Kindlenote"))
 	
 	for files in attach:
-		if DEBUG: print "Beginning attach of file", files
+		if opts.DEBUG: print "Beginning attach of file", files
 		part = MIMEBase('application', "octet-stream")
 		part.set_payload( open (files,"rb").read())
 		
@@ -102,9 +104,9 @@ def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False
 		part.add_header('Content-Disposition', 'attachment; filename="'+files+'"')
 		msg.attach(part)
 		
-		if DEBUG: print "Done attaching file", files
+		if opts.DEBUG: print "Done attaching file", files
 		
-	if DEBUG: print "Beginning the send"
+	if opts.DEBUG: print "Beginning the send"
 	try:
 		smtpObject.sendmail(from_addr, to_addr, msg.as_string())
 	except smtplib.SMTPException:
@@ -125,7 +127,7 @@ def smtpLogin(userName, passWord, smtpObject):
 		print "There was an error during authentication. Check your credentials in config.py"
 		sys.exit(1)
 	else: 
-		if DEBUG:
+		if opts.DEBUG:
 			print "Authentication with "+config.smtpServer+" successful."
 		
 def checkArgs (arguments): # Checks files that are specified at command line exist. Adds all command line items to a stack so it only has to loop once.
@@ -171,7 +173,7 @@ except (smtplib.SMTPException,smtplib.SMTPConnectError):
 	print "There was a problem connecting"
 	sys.exit(1)
 else:
-	if DEBUG:
+	if opts.DEBUG:
 		print "Connection to " + config.smtpServer + " successful"
 
 		
@@ -186,6 +188,6 @@ batchStarts = xrange(0, len(fileList), config.maxAttachments)
 batches = [fileList[x:x+config.maxAttachments] for x in batchStarts]
 
 for batch in batches:
-	if DEBUG: print "Sending batch."
+	if opts.DEBUG: print "Sending batch."
 	sendMail(config.from_addr,config.to_addr,'This is a test message',server, batch, opts.convert)
-	if DEBUG: print "Done sending batch."
+	if opts.DEBUG: print "Done sending batch."
