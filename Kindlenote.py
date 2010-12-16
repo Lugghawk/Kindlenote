@@ -122,9 +122,12 @@ def checkArgs (arguments): # Checks files that are specified at command line exi
 	for arg in arguments:
 	
 		if os.access(arg, os.R_OK):
-			filesToSend.append (arg)
+			if arg not in filesToSend:
+				filesToSend.append(arg)
+			else:
+				print "Duplicate file:", arg
 		else:
-			print "File " + arg +" doesn't exist. Skipping."
+			print "File", arg, "doesn't exist. Skipping."
 			#filesDontExist = True #Removing since we don't need to exit, just say that we're skipping that file.
 	
 	if len(filesToSend) == 0:
