@@ -13,12 +13,24 @@ parser.add_option('-c', '--convert', help='add convert tag to the subject line',
 		dest='convert', default=False, action='store_true')
 		
 parser.add_option('-D', '--debug', help='Turn on debugging output', dest='DEBUG', default=False, action='store_true')
+parser.add_option('-e', '--extension', help='''Select a default extension to apply to unrecognized file formats
+Recognized file formats are .doc, .rtf, .htm, .html, .txt, .zip, .mobi, .docx, .pdf''', dest='extension')
 
 if not sys.argv[1:]: # No arguments provided.
 	parser.print_help()
 	sys.exit(2)
 
 (opts, files) = parser.parse_args()
+
+if not opts.extension:
+	ext = ".txt"
+	if opts.DEBUG: print "No format option given. Using",ext
+else:
+	if opts.extension[0] != '.':
+		opts.extension = "." + opts.extension
+	ext = opts.extension
+	if opts.DEBUG: print "Format option given. Using extension",ext
+	
 
 if not files: # No filenames provided.
 	print "You must provide at least one file to send."
@@ -67,8 +79,8 @@ def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False
 	msg['From'] = from_addr
 	msg['To'] = to_addr
 	msg['Date'] = formatdate(localtime=True)
-	
-	
+
+
 	
 	subject = "Item from Kindlenote"
 	if convertFlag:
@@ -94,11 +106,26 @@ def sendMail(from_addr, to_addr, mesg, smtpObject,attach=[], convertFlag = False
 		#Rename the file in the attachment to .txt
 		#We have to do this after we open it, it's just the name in python that we add to the header.
 		#Amazon only allows certain extensions to the kindle.
-		dot_idx = files.rfind(".")
-		if dot_idx >= 0:
-			# Remove everything from the end until (and including) the last dot
-			files = files[:dot_idx]
-		files += ".txt"
+		
+			
+		##Microsoft Word (.doc)
+		##Rich Text Format (.rtf)
+		##HTML (.htm, .html) 
+		##Text (.txt) documents
+		##Archived documents (zip , x-zip) and compressed archived documents
+		##Mobi book
+		##Docx
+		##PDF
+		
+		#Those are the formats that are allowed. Currently the function removes the extension altogether.
+		allowedExtensions=[".doc",".rtf",".htm",".html",".txt",".zip",".mobi",".docx",".pdf"] 
+		dot_idx = files.rfind(".") # Check for an extension.
+		if files[dot_idx:] not in allowedExtensions:
+			if opts.DEBUG: print "Extension",files[dot_idx:],"not recognized. Setting to", ext
+			if dot_idx >= 0: 
+				# Remove everything from the end until (and including) the last dot
+				files = files[:dot_idx]
+			files += ext
 		
 		Encoders.encode_base64(part)
 		part.add_header('Content-Disposition', 'attachment; filename="'+files+'"')
